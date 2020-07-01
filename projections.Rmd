@@ -1,0 +1,558 @@
+---
+title: "GLF_projections"
+author: "Feven Yohannes"
+date: "June 24, 2020"
+output: html_document
+---
+
+```{r setup, include=FALSE,warning=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+library(readr)
+library(dbplyr)
+library(devtools)
+library(googlesheets4)
+library(knitr)
+library(tidyr)
+library(moderndive)
+library(purrr)
+library(ggplot2)
+library(gt)
+library(infer)
+library(janitor)
+library(ggpubr)
+
+# Using this for my projections graph
+
+library(tidyverse)
+```
+
+```{r,reading in the data}
+
+dir.create("raw-data")
+
+# I created a raw data directory.
+
+data <-read_csv("raw-data/boston_data - Beneficiaries Served (H - Rows.csv", col_types = cols(
+  `Reporting Year` = col_character(),
+  Organization = col_character(),
+  `Program Year` = col_double(),
+  `Portfolio Status` = col_character(),
+  `Actual Served` = col_double(),
+  `Target Served` = col_double(),
+  `% of Target Served` = col_character()
+  ))
+
+# Downloaded the googlesheets
+
+data <- data %>% clean_names()
+
+# Cleaning names
+
+
+```
+
+```{r,Friends of the Children}
+
+ data1 <- data %>% 
+  filter(organization == "Friends of the Children (FOC BOS)") %>%
+  separate(reporting_year, c("start_year", "end_year")) %>%
+  drop_na(actual_served)
+
+#Splitting the year
+
+# Filtering for just Friends of the Children
+
+data1 %>%
+  ggplot(aes(x=start_year, y=actual_served,fill=actual_served)) + geom_col() +
+  labs(title ="Growth of Friends of the Children from 2005 - 2018",
+        subtitle="An active portfolio organization of Greenlight Fund from 2005-2010", caption = "Caption: Analyzing the growth in the number of beneficiaries served by Friends of the Children in Boston ",
+    x="Year",y= "Number of Beneficiaries",
+    fill = "Number of Beneficiaries Served") +
+  theme(plot.title = element_text(face = "bold")) +
+  theme(legend.title = element_text(color = "gray1", size = 8),legend.key.width = unit(0.8,"cm"),legend.key.size = unit(1, "cm")) +theme(axis.text.x = element_text( 
+    angle = 70, 
+    size=10,  
+    face=3)
+  ) +
+  theme(
+    plot.caption = element_text(hjust = 0, face = "italic"))
+
+  
+  
+  
+
+```
+
+```{r,Rasing a Reader}
+
+ data2 <- data %>% 
+  filter(organization == "Raising A Reader - MA (RARMA BOS)") %>%
+  separate(reporting_year, c("start_year", "end_year")) %>%
+  drop_na(actual_served)
+
+#Splitting the year
+
+# Filtering for just Rasing a Reader
+
+data2 %>%
+  ggplot(aes(x=start_year, y=actual_served,fill=actual_served)) + geom_col() + scale_fill_gradient(
+low = "red",
+high = "yellow3") +
+  labs(title ="Growth of Raising a Reader from 2006 - 2019",
+        subtitle="An active portfolio organization of Greenlight Fund from 2006 - 2011",
+    x="Year",y= "Number of Beneficiaries",
+    caption = "Caption: Analyzing the growth in the number of beneficiaries served by Rasing a Reader in Boston ",
+    fill = "Number of Beneficiaries Served") +
+  theme(plot.title = element_text(face = "bold")) +
+  theme(legend.title = element_text(color = "gray1", size = 8),legend.key.width = unit(0.8,"cm"),legend.key.size = unit(1, "cm")) +theme(axis.text.x = element_text( 
+    angle = 70, 
+    size=10,  
+    face=3)
+  ) +
+  theme(
+    plot.caption = element_text(hjust = 0, face = "italic"))
+
+  
+
+```
+
+```{r,Peer Health Exchange}
+
+data3 <- data %>% 
+  filter(organization == "Peer Health Exchange (PHE BOS)") %>%
+  separate(reporting_year, c("start_year", "end_year")) %>%
+  drop_na(actual_served)
+
+#Splitting the year
+
+# Filtering for just Peer Health Exchange
+
+data3 %>%
+  ggplot(aes(x=start_year, y=actual_served,fill=actual_served)) + geom_col()  + scale_fill_gradient(
+low = "pink",
+high = "plum4") +
+  labs(title ="Growth of Peer Health Exchange 2007 - 2018",
+        subtitle="An active portfolio organization of Greenlight Fund from 2007 - 2011",
+    x="Year",y= "Number of Beneficiaries",
+    caption = "Caption: Analyzing the growth in the number of beneficiaries served by Peer Health Exchange in Boston",
+    fill = "Number of Beneficiaries Served") +
+  theme(plot.title = element_text(face = "bold")) +
+  theme(legend.title = element_text(color = "gray1", size = 8),legend.key.width = unit(0.8,"cm"),legend.key.size = unit(1, "cm")) +theme(axis.text.x = element_text( 
+    angle = 70, 
+    size=10,  
+    face=3)
+  ) +
+  theme(
+    plot.caption = element_text(hjust = 0, face = "italic"))
+  
+
+```
+```{r, Youth Villages}
+
+data4 <- data %>% 
+  filter(organization == "Youth Villages (YV BOS)") %>%
+  separate(reporting_year, c("start_year", "end_year")) %>%
+  drop_na(actual_served)
+
+#Splitting the year
+
+# Filtering for just Youth Villages
+
+data4 %>%
+  ggplot(aes(x=start_year, y=actual_served,fill=actual_served)) + geom_col() + scale_fill_gradient(
+low = "seagreen4",
+high = "palegreen") +
+  labs(title ="Growth of Youth Villages 2009 - 2018",
+        subtitle="An active portfolio organization of Greenlight Fund from 2009 - 2012",
+       caption = "**Caption**: Analyzing the growth in the number  of beneficiaries \n served by Youth Villages in Boston",
+    x="Year",y= "Number of Beneficiaries",
+    fill = "Number of Beneficiaries Served") +
+  theme(plot.title = element_text(face = "bold")) +
+  theme(legend.title = element_text(color = "gray1", size = 10),legend.key.width = unit(0.8,"cm"),legend.key.size = unit(1, "cm")) +
+  theme(
+    plot.caption = element_text(hjust = 0, face = "italic"))
+  
+  
+
+```
+
+```{r, Family Indepednce Initative}
+
+data5 <- data %>% 
+  filter(organization == "Family Independence Initiative (FII BOS)") %>%
+  separate(reporting_year, c("start_year", "end_year")) %>%
+  drop_na(actual_served)
+
+#Splitting the year
+
+# Filtering for just Family Independence Initiative
+
+data5 %>%
+  ggplot(aes(x=start_year, y=actual_served,fill=actual_served)) + geom_col()   + scale_fill_gradient(
+low = "skyblue1",
+high = "royalblue2") +
+  labs(title ="Growth of Family Independence Initiative 2011 - 2019",
+        subtitle="An active portfolio organization of Greenlight's from 2011 - 2015",
+    x="Year",y= "Number of Beneficiaries",
+    caption = "Caption: Analyzing the growth in the number  of beneficiaries \n served by Family Independence Initiative in Boston",
+    fill = "Number of Beneficiaries Served") +
+  theme(plot.title = element_text(face = "bold")) +
+  theme(legend.title = element_text(color = "gray1", size = 10),legend.key.width = unit(0.8,"cm"),legend.key.size = unit(1, "cm")) +
+  theme(
+    plot.caption = element_text(hjust = 0, face = "italic"))
+  
+```
+
+```{r, Single Stop USA}
+
+data6 <- data %>% 
+  filter(organization == "Single Stop USA (SSUSA BOS)") %>%
+  separate(reporting_year, c("start_year", "end_year")) %>%
+  drop_na(actual_served)
+
+#Splitting the year
+
+# Filtering for just Single Stop USA
+
+data6 %>%
+  ggplot(aes(x=start_year, y=actual_served,fill=actual_served)) + geom_col()  + scale_fill_gradient(
+low = "tomato1",
+high = "brown4") +
+  labs(title ="Growth of Single Stop USA 2011 - 2019",
+        subtitle="An active portfolio organization of Greenlight's from 2011 - 2016",
+    x="Year",y= "Number of Beneficiaries",
+    caption = "Caption: Analyzing the growth in the number of beneficiaries \n served by Single Stop USA in Boston",
+    fill = "Number of Beneficiaries Served") +
+  theme(plot.title = element_text(face = "bold")) +
+  theme(legend.title = element_text(color = "gray1", size = 10),legend.key.width = unit(0.8,"cm"),legend.key.size = unit(1, "cm")) +
+  theme(
+    plot.caption = element_text(hjust = 0, face = "italic"))
+```
+```{r, Blueprint School's Network}
+
+data7 <- data %>% 
+  filter(organization == "Blueprint Schools Network (BSN BOS)") %>%
+  separate(reporting_year, c("start_year", "end_year")) %>%
+  drop_na(actual_served)
+
+# Splitting the year
+
+# Filtering for just Blueprint
+
+data7 %>%
+  ggplot(aes(x=start_year, y=actual_served,fill=actual_served)) + geom_col()  + scale_fill_gradient(
+low = "goldenrod3",
+high = "darkorange2") +
+  labs(title ="Blueprint Schools Network 2011 - 2019",
+        subtitle="An active portfolio organization of Greenlight's from 2011 - 2016",
+    x="Year",y= "Number of Beneficiaries",
+    caption = "Caption: Analyzing the growth in the number of beneficiaries \n served by Blueprint School's Network in Boston",
+    fill = "Number of Beneficiaries Served") +
+  theme(plot.title = element_text(face = "bold")) +
+  theme(legend.title = element_text(color = "gray1", size = 10),legend.key.width = unit(0.8,"cm"),legend.key.size = unit(1, "cm")) +
+  theme(
+    plot.caption = element_text(hjust = 0, face = "italic"))
+
+
+
+```
+
+```{r,College Advising Corps}
+
+data8 <- data %>% 
+  filter(organization == "College Advising Corps (CAC BOS)") %>%
+  separate(reporting_year, c("start_year", "end_year")) %>%
+  drop_na(actual_served)
+
+# Splitting the year
+
+# Filtering for just College Advising Corps
+
+data8 %>%
+  ggplot(aes(x=start_year, y=actual_served,fill=actual_served)) + geom_col()  + scale_fill_gradient(
+low = "slategray2",
+high = "plum3")+
+  labs(title ="Number of Beneficiaries served from 2013 - 2019",
+        subtitle="An active portfolio organization of Greenlight's from 2013 - 2018",
+    x="Year",y= "Number of Beneficiaries",
+    caption = "Caption: Analyzing the growth in the number of beneficiaries \n served by College Advising Corps in Boston",
+    fill = "Number of Beneficiaries Served") +
+  theme(plot.title = element_text(face = "bold")) +
+  theme(legend.title = element_text(color = "gray1", size = 10),legend.key.width = unit(0.8,"cm"),legend.key.size = unit(1, "cm")) +
+  theme(
+    plot.caption = element_text(hjust = 0, face = "italic"))
+
+
+
+
+
+```
+
+```{r,New Teacher Center}
+
+data9 <- data %>% 
+  filter(organization == "New Teacher Center (NTC BOS)") %>%
+  separate(reporting_year, c("start_year", "end_year")) %>%
+  drop_na(actual_served)
+
+# Splitting the year
+
+# Filtering for just New Teacher's Center
+
+data9 %>%
+  ggplot(aes(x=start_year, y=actual_served,fill=actual_served)) + geom_col()  + scale_fill_gradient(
+low = "coral1",
+high = "coral4")+
+  labs(title ="Number of Beneficiaries served from 2013 - 2016",
+        subtitle="An active portfolio organization of Greenlight's from 2013 - 2016",
+    x="Year",y= "Number of Beneficiaries",
+    caption = "Caption: Analyzing the growth in the number of beneficiaries \n served by New Teacher Center in Boston",
+    fill = "Number of Beneficiaries Served") +
+  theme(plot.title = element_text(face = "bold"))  +
+  theme(legend.title = element_text(color = "gray1", size = 10),legend.key.width = unit(0.8,"cm"),legend.key.size = unit(1, "cm")) +
+  theme(
+    plot.caption = element_text(hjust = 0, face = "italic"))
+
+
+```
+
+```{r, CareMessage}
+
+CareMessage (CM BOS)
+
+data10 <- data %>% 
+  filter(organization == "CareMessage (CM BOS)") %>%
+  separate(reporting_year, c("start_year", "end_year")) %>%
+  drop_na(actual_served)
+
+# Splitting the year
+
+# Filtering for just CareMessage
+
+data10 %>%
+  ggplot(aes(x=start_year, y=actual_served,fill=actual_served)) + geom_col()  + scale_fill_gradient(
+low = "thistle3",
+high = "violet") +
+  labs(title ="Number of Beneficiaries that CareMessage served from 2016 - 2019",
+        subtitle="An active portfolio organization of Greenlight Fund from 2016 - 2019",
+    x="Year",y= "Number of Beneficiaries",
+    caption = "Caption: Analyzing the growth in the number of beneficiaries \n served by CareMessage in Boston",
+    fill = "Number of Beneficiaries Served") +
+  theme(plot.title = element_text(face = "bold",size=12)) +
+  theme(legend.title = element_text(color = "gray1", size = 10),legend.key.width = unit(0.8,"cm"),legend.key.size = unit(1, "cm")) +
+  theme(
+    plot.caption = element_text(hjust = 0, face = "italic",size=10)) +
+  scale_y_continuous(name="Fluorescent intensity/arbitrary units", labels = scales::comma) +
+  geom_text(aes(label = actual_served), vjust = 0) 
+    
+
+
+```
+
+```{r,Youth Guidance (BAM)}
+
+data11 <- data %>% 
+  filter(organization == "Youth Guidance (BAM BOS)") %>%
+  separate(reporting_year, c("start_year", "end_year")) %>%
+  drop_na(actual_served)
+
+# Splitting the year
+
+# Filtering for just BAM
+
+data11 %>%
+  ggplot(aes(x=start_year, y=actual_served,fill=actual_served)) + geom_col()  + scale_fill_gradient(
+low = "palegreen1",
+high = "palegreen3")+
+  labs(title ="Number of Beneficiaries that BAM served from 2017 - 2019",
+        subtitle="An active portfolio organization of Greenlight's from 2017 - 2019",
+          caption = "Caption: Analyzing the growth in the number of beneficiaries \n served by BAM in Boston",
+    x="Year",y= "Number of Beneficiaries",
+    fill = "Number of Beneficiaries Served") +
+  theme(plot.title = element_text(face = "bold")) +
+  theme(
+    plot.caption = element_text(hjust = 0, face = "italic",size=10))
+
+
+
+```
+
+```{r, Per Scholas}
+
+
+data12 <- data %>% 
+  filter(organization == "Per Scholas (PS BOS)") %>%
+  separate(reporting_year, c("start_year", "end_year")) %>%
+  drop_na(actual_served)
+
+# Splitting the year
+
+# Filtering for just Per Scholas
+
+data12 %>%
+  ggplot(aes(x=start_year, y=actual_served,fill=actual_served)) + geom_col()  + scale_fill_gradient(
+low = "salmon4",
+high = "salmon1") +
+  labs(title ="Number of Beneficiaries that Per Scholas served in 2019",
+        subtitle="An active portfolio organization of Greenlight's since 2019",
+    x="Year",y= "Number of Beneficiaries",
+    fill = "Number of Beneficiaries Served") +
+  theme(plot.title = element_text(face = "bold"))
+
+
+
+```
+
+
+```{r,projections calculations}
+
+# Creating a base data frame in order to see total years and total number of beneficiaries served
+
+projections <- data %>%
+
+  mutate(total_served = sum(actual_served,na.rm=TRUE)) %>%
+  
+  # Finding the total number of people served and making a new column
+  
+  mutate(combined_years = sum(program_year,na.rm=TRUE))
+
+
+
+
+# Calculating the average benificiaries served per year for active organizations
+
+projections_active <- data %>%
+  filter(portfolio_status == "Active") %>%
+  
+  # Filtering for just active portfolio's
+  # Subtracting 93 because don't want to include Per Scholas 2019-2020 numbers,just want numbers up to 2018-2019
+  
+  mutate(total_served = sum(actual_served,na.rm=TRUE) - 93) %>%
+  
+  # Finding the total number of people served and making a new column
+  
+  mutate(combined_years = sum(program_year,na.rm=TRUE)) 
+
+# Finding the average
+
+  
+prop_active <- projections_active$total_served/projections_active$combined_years
+
+
+
+
+# Calculating the average benificiaries served per year for legacy organizations
+
+projections_legacy <- data %>%
+  filter(portfolio_status == "Legacy") %>%
+  
+  # Filtering for just legacy portfolio's
+  
+  mutate(total_served = sum(actual_served,na.rm=TRUE)) %>%
+  
+  # Finding the total number of people served and making a new column
+  
+  mutate(combined_years = sum(program_year,na.rm=TRUE))
+
+ # Calculating the avergae rate of benficiaries growth
+  
+prop_legacy <- projections_legacy$total_served/projections_legacy$combined_years
+  
+
+
+```
+  
+```{r, projections pt 2, calculations by hand}
+
+# Counting how many active and legacy organizations there are 
+
+ data %>%
+  filter(portfolio_status == "Active") %>%
+  filter(reporting_year == "2019-2020") %>%
+  
+  # Filtering for just present active organizations
+  
+  count(organization) %>%
+  distinct()
+
+# 3 active organizations, 9 legacy organizations in 2019-2020
+
+# Base Year Calulations is 483932 : total number of beneficiares, not including Per Scholas 2019-2020 numbers
+
+projections$total_served - 93
+
+# Current Year 2019-2020: 494090.4
+  # Current year with Per Scholas, CareMessage and BAM active
+  # We already know Per Scholas served 93, don't need to include them in projections
+
+projections$total_served -93  + (prop_active*2) + (prop_legacy*12) + 93
+
+
+
+# Year 1 Calculations : 506917.9
+  # Addition of a new organization along with Per Scholas, and BAM, as well as the already existing 12 organizations + Care Message
+
+493995.9 + (prop_active*3) + (prop_legacy*13)
+
+
+# Year 2 Calculations : 522384.2
+  # Last year's calculation + 
+  # Addition of a new organization with Per Scholas and Org 1, BAM has a 5 year contract so stays active, 13 legacy organizations
+
+506917.9 + (prop_active*4) + (prop_legacy*13)
+
+# Year 3 Calculations : 538257.4
+  # Last year's calculation + addition of a new organization with Org 1, Org 2, and Per Scholas, BAM becomes a legacy
+
+522384.2 + (prop_active *4) + (prop_legacy*14)
+
+# Year 4 Calculations : 554537.5
+  # Last year's calculation + addition of a new organization with Org 1,Org 2, Org 3,Per Scholas becomes a legacy organization
+
+538257.4 + (prop_active * 4) + (prop_legacy*15)
+  
+
+
+# Making a new dataframe
+  
+  
+  new_data <- data.frame("Year" = c("2019", "2020", "2021", "2022", "2023"), "Beneficiaries_Served" = c(494090.4,506917.9,522384.2,538257.4,554537.5)) 
+  
+  
+  
+# Rounding the numbers
+  
+  new_data <- new_data %>%
+    round(Beneficiaries_Served)
+
+  
+# Making a graph with the new dataframe to see future projections
+  
+new_data %>%
+  ggplot(aes(x=Year, y=Beneficiaries_Served,fill=Beneficiaries_Served)) + geom_col() +
+   scale_fill_gradient(
+low = "lightgreen",
+high = "green4") +
+  labs(title ="Projections for Number of Beneficiaries Served for ",
+        subtitle="GreenLight Boston's Potential Future Portfolio from 2019-2024",
+       caption = "Caption: Analyzing the potential future growth in the number of beneficiaries \n served GreenLight Fund Boston's active and legacy organizations. Calculations to these projections can be found here",
+    x="Year",y= "Number of Beneficiaries",
+    fill = "Number of Beneficiaries Served") +
+  theme(plot.title = element_text(face = "bold")) +
+  scale_y_continuous(name="Fluorescent intensity/arbitrary units", labels = scales::comma) +
+  geom_text(aes(label = Beneficiaries_Served), vjust = 0) 
+    
+  
+
+
+```
+
+
+
+
+  
+  
+         
+```
+
