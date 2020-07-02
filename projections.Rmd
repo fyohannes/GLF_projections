@@ -27,7 +27,7 @@ library(ggpubr)
 library(tidyverse)
 ```
 
-```{r,reading in the data}
+```{r,reading in the data,message=FALSE}
 
 dir.create("raw-data")
 
@@ -229,7 +229,7 @@ high = "brown4") +
   theme(
     plot.caption = element_text(hjust = 0, face = "italic"))
 ```
-```{r, Blueprint School's Network}
+```{r, Blueprint School Network}
 
 data7 <- data %>% 
   filter(organization == "Blueprint Schools Network (BSN BOS)") %>%
@@ -318,8 +318,6 @@ high = "coral4")+
 ```
 
 ```{r, CareMessage}
-
-CareMessage (CM BOS)
 
 data10 <- data %>% 
   filter(organization == "CareMessage (CM BOS)") %>%
@@ -463,7 +461,7 @@ prop_legacy <- projections_legacy$total_served/projections_legacy$combined_years
 
 ```
   
-```{r, projections pt 2, calculations by hand}
+```{r, projections pt 2, calculations by hand,include= FALSE}
 
 # Counting how many active and legacy organizations there are 
 
@@ -520,13 +518,17 @@ projections$total_served -93  + (prop_active*2) + (prop_legacy*12) + 93
   new_data <- data.frame("Year" = c("2019", "2020", "2021", "2022", "2023"), "Beneficiaries_Served" = c(494090.4,506917.9,522384.2,538257.4,554537.5)) 
   
   
+  # Rounding the numbers of beneficiaries served to the nearest whole number 
   
-# Rounding the numbers
+  new_data <- 
+    new_data %>%
+    mutate(Beneficiaries_Served = signif(Beneficiaries_Served,digits=6))
   
-  new_data <- new_data %>%
-    round(Beneficiaries_Served)
+  
+```
 
-  
+```{r,graph}
+
 # Making a graph with the new dataframe to see future projections
   
 new_data %>%
@@ -534,25 +536,20 @@ new_data %>%
    scale_fill_gradient(
 low = "lightgreen",
 high = "green4") +
-  labs(title ="Projections for Number of Beneficiaries Served for ",
-        subtitle="GreenLight Boston's Potential Future Portfolio from 2019-2024",
-       caption = "Caption: Analyzing the potential future growth in the number of beneficiaries \n served GreenLight Fund Boston's active and legacy organizations. Calculations to these projections can be found here",
+  labs(title ="Projections for Number of Beneficiaries Served  ",
+        subtitle="GreenLight Boston's Potential Future Portfolio from 2019 - 2024",
+       caption = "Caption: Analyzing the potential future growth in the number of beneficiaries \n served GreenLight Fund Boston's active and legacy organizations. \n Calculations to these projections can be found at \n https://github.com/fyohannes/GLF_projections/blob/master/projections.Rmd",
     x="Year",y= "Number of Beneficiaries",
     fill = "Number of Beneficiaries Served") +
   theme(plot.title = element_text(face = "bold")) +
-  scale_y_continuous(name="Fluorescent intensity/arbitrary units", labels = scales::comma) +
-  geom_text(aes(label = Beneficiaries_Served), vjust = 0) 
+  scale_y_continuous(name="Number of Beneficiaries Served", labels = scales::comma) +
+  geom_text(aes(label = Beneficiaries_Served), vjust = 0)  +
+  theme(legend.title = element_text(color = "gray1", size = 10),legend.key.width = unit(0.8,"cm"),legend.key.size = unit(1, "cm"))  + theme(
+    plot.caption = element_text(hjust = 0, face = "italic"))
     
-  
-
 
 ```
 
-
-
-
   
-  
-         
-```
 
+`
