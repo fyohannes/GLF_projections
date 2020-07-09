@@ -1,5 +1,5 @@
 ---
-title: "GLF_projections"
+title: "GLF Projections"
 author: "Feven Yohannes"
 date: "June 24, 2020"
 output: html_document
@@ -538,7 +538,7 @@ low = "lightgreen",
 high = "green4") +
   labs(title ="Projections for Number of Beneficiaries Served  ",
         subtitle="GreenLight Boston's Potential Future Portfolio from 2019 - 2024",
-       caption = "Caption: Analyzing the potential future growth in the number of beneficiaries \n served GreenLight Fund Boston's active and legacy organizations. \n Calculations to these projections can be found at \n https://github.com/fyohannes/GLF_projections/blob/master/projections.Rmd",
+       caption = "Caption: Analyzing the potential future growth in the number of beneficiaries \n served GreenLight Fund Boston's active and legacy organizations. The assumptions \n behind the calculations were that GLF would \n invest in 4 organizations over the next 5 years. \n Calculations to these projections can be found at \n https://github.com/fyohannes/GLF_projections/blob/master/projections.Rmd",
     x="Year",y= "Number of Beneficiaries",
     fill = "Number of Beneficiaries Served") +
   theme(plot.title = element_text(face = "bold")) +
