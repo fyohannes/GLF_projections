@@ -24,6 +24,10 @@ library(ggpubr)
 
 # Using this for my projections graph
 
+library(growthrates)
+
+# Using this for growth projections
+
 library(tidyverse)
 ```
 
@@ -403,153 +407,161 @@ high = "salmon1") +
 ```
 
 
-```{r,projections calculations}
+```{r, Adding up all organization averages from the last three years}
 
-# Creating a base data frame in order to see total years and total number of beneficiaries served
-
-projections <- data %>%
-
-  mutate(total_served = sum(actual_served,na.rm=TRUE)) %>%
-  
-  # Finding the total number of people served and making a new column
-  
-  mutate(combined_years = sum(program_year,na.rm=TRUE))
-
-
-
-
-# Calculating the average benificiaries served per year for active organizations
-
-projections_active <- data %>%
-  filter(portfolio_status == "Active") %>%
-  
-  # Filtering for just active portfolio's
-  # Subtracting 93 because don't want to include Per Scholas 2019-2020 numbers,just want numbers up to 2018-2019
-  
-  mutate(total_served = sum(actual_served,na.rm=TRUE) - 93) %>%
-  
-  # Finding the total number of people served and making a new column
-  
-  mutate(combined_years = sum(program_year,na.rm=TRUE)) 
-
-# Finding the average
-
-  
-prop_active <- projections_active$total_served/projections_active$combined_years
-
-
-
-
-# Calculating the average benificiaries served per year for legacy organizations
-
-projections_legacy <- data %>%
-  filter(portfolio_status == "Legacy") %>%
-  
-  # Filtering for just legacy portfolio's
-  
-  mutate(total_served = sum(actual_served,na.rm=TRUE)) %>%
-  
-  # Finding the total number of people served and making a new column
-  
-  mutate(combined_years = sum(program_year,na.rm=TRUE))
-
- # Calculating the avergae rate of benficiaries growth
-  
-prop_legacy <- projections_legacy$total_served/projections_legacy$combined_years
-  
-
-
-```
-  
-```{r, projections pt 2, calculations by hand,include= FALSE}
-
-# Counting how many active and legacy organizations there are 
-
- data %>%
-  filter(portfolio_status == "Active") %>%
-  filter(reporting_year == "2019-2020") %>%
-  
-  # Filtering for just present active organizations
-  
-  count(organization) %>%
-  distinct()
-
-# 3 active organizations, 9 legacy organizations in 2019-2020
-
-# Base Year Calulations is 483932 : total number of beneficiares, not including Per Scholas 2019-2020 numbers
-
-projections$total_served - 93
-
-# Current Year 2019-2020: 494090.4
-  # Current year with Per Scholas, CareMessage and BAM active
-  # We already know Per Scholas served 93, don't need to include them in projections
-
-projections$total_served -93  + (prop_active*2) + (prop_legacy*12) + 93
-
-
-
-# Year 1 Calculations : 506917.9
-  # Addition of a new organization along with Per Scholas, and BAM, as well as the already existing 12 organizations + Care Message
-
-493995.9 + (prop_active*3) + (prop_legacy*13)
-
-
-# Year 2 Calculations : 522384.2
-  # Last year's calculation + 
-  # Addition of a new organization with Per Scholas and Org 1, BAM has a 5 year contract so stays active, 13 legacy organizations
-
-506917.9 + (prop_active*4) + (prop_legacy*13)
-
-# Year 3 Calculations : 538257.4
-  # Last year's calculation + addition of a new organization with Org 1, Org 2, and Per Scholas, BAM becomes a legacy
-
-522384.2 + (prop_active *4) + (prop_legacy*14)
-
-# Year 4 Calculations : 554537.5
-  # Last year's calculation + addition of a new organization with Org 1,Org 2, Org 3,Per Scholas becomes a legacy organization
-
-538257.4 + (prop_active * 4) + (prop_legacy*15)
-  
-
-
-# Making a new dataframe
-  
-  
-  new_data <- data.frame("Year" = c("2019", "2020", "2021", "2022", "2023"), "Beneficiaries_Served" = c(494090.4,506917.9,522384.2,538257.4,554537.5)) 
-  
-  
-  # Rounding the numbers of beneficiaries served to the nearest whole number 
-  
-  new_data <- 
-    new_data %>%
-    mutate(Beneficiaries_Served = signif(Beneficiaries_Served,digits=6))
-  
-  
-```
-
-```{r,graph}
-
-# Making a graph with the new dataframe to see future projections
-  
-new_data %>%
-  ggplot(aes(x=Year, y=Beneficiaries_Served,fill=Beneficiaries_Served)) + geom_col() +
-   scale_fill_gradient(
-low = "lightgreen",
-high = "green4") +
-  labs(title ="Projections for Number of Beneficiaries Served  ",
-        subtitle="GreenLight Boston's Potential Future Portfolio from 2019 - 2024",
-       caption = "Caption: Analyzing the potential future growth in the number of beneficiaries \n served GreenLight Fund Boston's active and legacy organizations. The assumptions \n behind the calculations were that GLF would \n invest in 4 organizations over the next 5 years. \n Calculations to these projections can be found at \n https://github.com/fyohannes/GLF_projections/blob/master/projections.Rmd",
-    x="Year",y= "Number of Beneficiaries",
-    fill = "Number of Beneficiaries Served") +
-  theme(plot.title = element_text(face = "bold")) +
-  scale_y_continuous(name="Number of Beneficiaries Served", labels = scales::comma) +
-  geom_text(aes(label = Beneficiaries_Served), vjust = 0)  +
-  theme(legend.title = element_text(color = "gray1", size = 10),legend.key.width = unit(0.8,"cm"),legend.key.size = unit(1, "cm"))  + theme(
-    plot.caption = element_text(hjust = 0, face = "italic"))
-    
+# Yearly Growth for existing organizations both Active and Legacy
+# 50,138 is Care Message's Average Growth, but this is an incredibly modest projection, likelihood is that it will exceed 150,000 beneficiaries served
 
 ```
 
-  
+```{r, projections by Organization, Friends of the Children,124}
 
-`
+  # Friends of the Children
+  # Progam Years 14,13,12,11,10 are the last five years of data. This is what is being used to find average growth of beneficiaries served.
+
+
+# Filtering for Friends of the Children
+
+dataA <- data %>%
+filter(organization == "Friends of the Children (FOC BOS)") %>%
+
+# Calculating the growth rate for each year
+
+growthA <- dataA %>%
+  arrange(reporting_year) %>%
+  mutate(diff_year = program_year - lag(program_year)) %>%
+  mutate(diff_growth = actual_served - lag(actual_served)) %>%
+  mutate(rate_percent = (diff_growth /diff_year)/ lag(actual_served) * 100)
+
+# Calculating the average growth rate for the last five years
+
+growthA <- growthA %>%
+  filter(program_year %in% c("14","13","12","11","10")) %>%
+  mutate(avg_growth_rate = mean(rate_percent))
+
+
+# Calculating projections for the next 5 years
+
+ (138 * 1.455431)
+
+(200.8495 * 1.455)
+
+
+
+
+
+
+# Year 2019-2020 : 200.8495
+# Year 2020-2021 : 292.236
+# Year 2021-2022 : 178.5
+# Year 2022-2023 : 192
+# Year 2023-2024 : 205.5
+```
+
+```{r, Projections for each Org, Raising a Reader,10407}
+
+  # Rasing a Reader
+  # Progam Years 13,12,11 are the last three years of data. This is what is being used to find average growth of beneficiaries served.
+
+dataB <- data %>%
+filter(organization == "Raising A Reader - MA (RARMA BOS)") %>%
+filter(program_year %in% c("13","12","11")) %>%
+mutate(total_served = sum(actual_served,na.rm=TRUE)) %>%
+mutate(average= total_served/3)
+
+# Coordinates 
+# (1,13000) (3,8500)
+
+
+```
+
+```{r, Portfolio Organizations, Peer Health Exchange,3268}
+  # Peer Health Exchange
+  # Progam Years 11,10,9 are the last three years of data. This is what is being used to find average growth of beneficiaries served.
+
+dataC <- data %>%
+filter(organization == "Peer Health Exchange (PHE BOS)")  %>%
+filter(program_year %in% c("11","10","9")) %>%
+mutate(total_served = sum(actual_served,na.rm=TRUE)) %>%
+mutate(average= total_served/3)
+
+
+```
+
+```{r, Portfolio Orgs, Youth Villages,241}
+
+ # Youth Villages 
+  # Progam Years 10,9,8 are the last three years of data. This is what is being used to find average growth of beneficiaries served.
+
+  
+dataD <- data %>%
+filter(organization == "Youth Villages (YV BOS)") %>%
+filter(program_year %in% c("10","9","8")) %>%
+mutate(total_served = sum(actual_served,na.rm=TRUE)) %>%
+mutate(average= total_served/3)
+
+```
+
+```{r, Portfolio Organizations, Family Independence Iniative,3348}
+
+ # Family Independence Iniative
+  # Progam Years 8,7,6 are the last three years of data. This is what is being used to find average growth of beneficiaries served.
+
+  
+dataE <- data %>%
+filter(organization == "Family Independence Initiative (FII BOS)") %>%
+filter(program_year %in% c("8","7","6")) %>%
+mutate(total_served = sum(actual_served,na.rm=TRUE)) %>%
+mutate(average= total_served/3)
+```
+
+```{r,Portfolio Organization, Single Stop,9604}
+
+# Single Stop
+  # Progam Years 8,7,6 are the last three years of data. This is what is being used to find average growth of beneficiaries served.
+
+  
+dataF <- data %>%
+filter(organization == "Single Stop USA (SSUSA BOS)") %>% 
+filter(program_year %in% c("8","7","6")) %>%
+mutate(total_served = sum(actual_served,na.rm=TRUE)) %>%
+mutate(average= total_served/3)
+```
+
+```{r, Portfolio Organization, College Advising Corps,16922}
+
+# College Advising Corps
+  # Progam Years 6,5,4 are the last three years of data. This is what is being used to find average growth of beneficiaries served.
+  
+dataG <- data %>%
+filter(organization == "College Advising Corps (CAC BOS)") %>%
+filter(program_year %in% c("6","5","4")) %>%
+mutate(total_served = sum(actual_served,na.rm=TRUE)) %>%
+mutate(average= total_served/3)
+```
+
+```{r, Portfolio Organizations,Care Message,50138}
+
+# Care Message
+  # Progam Years 3,2,1 are the last three years of data. This is what is being used to find average growth of beneficiaries served.
+  
+dataH <- data %>%
+filter(organization == "CareMessage (CM BOS)") %>%
+filter(program_year %in% c("3","2","1")) %>%
+mutate(total_served = sum(actual_served,na.rm=TRUE)) %>%
+mutate(average= total_served/3)
+```
+
+```{r, Portfolio Organizations,BAM,169}
+
+# BAM/Youth Guidance
+  # Progam Years 2 and 1 are the last two years of data. This is what is being used to find average growth of beneficiaries served.
+  
+dataI <- data %>%
+filter(organization == "Youth Guidance (BAM BOS)") %>%
+filter(program_year %in% c("3","2","1")) %>%
+mutate(total_served = sum(actual_served,na.rm=TRUE)) %>%
+mutate(average= total_served/3)
+```
+
+
