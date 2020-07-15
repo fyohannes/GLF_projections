@@ -22,6 +22,9 @@ library(infer)
 library(janitor)
 library(ggpubr)
 
+library(stargazer)
+library(rstanarm)
+
 # Using this for my projections graph
 
 library(growthrates)
@@ -424,6 +427,8 @@ high = "salmon1") +
 
 dataA <- data %>%
 filter(organization == "Friends of the Children (FOC BOS)") %>%
+  
+  
 
 # Calculating the growth rate for each year
 
@@ -437,25 +442,31 @@ growthA <- dataA %>%
 
 growthA <- growthA %>%
   filter(program_year %in% c("14","13","12","11","10")) %>%
-  mutate(avg_growth_rate = mean(rate_percent))
+  mutate(avg_growth_rate = mean(rate_percent)) %>%
+  mutate(avg_diff_growth= mean(diff_growth))
 
 
 # Calculating projections for the next 5 years
 
- (138 * 1.455431)
 
-(200.8495 * 1.455)
+modA <- stan_lm(actual_served ~ program_year, data=growthA,prior=NULL,refresh=0)
+
+(138 +1.2)
+
+(139.2 +1.2)
+
+(140.4 +1.2)
+
+(141.6 + 1.2)
+
+(142.8 +1.2)
 
 
-
-
-
-
-# Year 2019-2020 : 200.8495
-# Year 2020-2021 : 292.236
-# Year 2021-2022 : 178.5
-# Year 2022-2023 : 192
-# Year 2023-2024 : 205.5
+# Year 2019-2020 : 139.2
+# Year 2020-2021 : 140.4
+# Year 2021-2022 : 141.6
+# Year 2022-2023 : 142.8
+# Year 2023-2024 : 144
 ```
 
 ```{r, Projections for each Org, Raising a Reader,10407}
@@ -463,105 +474,480 @@ growthA <- growthA %>%
   # Rasing a Reader
   # Progam Years 13,12,11 are the last three years of data. This is what is being used to find average growth of beneficiaries served.
 
+# Filtering
+
 dataB <- data %>%
 filter(organization == "Raising A Reader - MA (RARMA BOS)") %>%
-filter(program_year %in% c("13","12","11")) %>%
-mutate(total_served = sum(actual_served,na.rm=TRUE)) %>%
-mutate(average= total_served/3)
+  
+# Calculating Growth
+  
+growthB <- dataB %>%
+  arrange(reporting_year) %>%
+  mutate(diff_year = program_year - lag(program_year)) %>%
+  mutate(diff_growth = actual_served - lag(actual_served)) %>%
+  mutate(rate_percent = (diff_growth /diff_year)/ lag(actual_served) * 100)
 
-# Coordinates 
-# (1,13000) (3,8500)
+# Calculating the average growth rate for the last five years
+
+growthB <- growthB %>%
+  filter(program_year %in% c("13","12","11","10","9")) %>%
+  mutate(avg_growth_rate = mean(rate_percent)) %>%
+  mutate(avg_diff_growth= mean(diff_growth))
+
+# Using the avg_diff growth to calculate each year, avg diff is -600
+
+(8500-600)
+
+(7900-600)
+
+(7300-600)
+
+(6700-600)
+
+(6100-600)
+
+
+# Year 2019-2020 : 7900
+# Year 2020-2021 : 7300
+# Year 2021-2022 : 6700
+# Year 2022-2023 : 6100
+# Year 2023-2024 : 5500
+
+
 
 
 ```
 
 ```{r, Portfolio Organizations, Peer Health Exchange,3268}
   # Peer Health Exchange
-  # Progam Years 11,10,9 are the last three years of data. This is what is being used to find average growth of beneficiaries served.
+ 
+ # Filtering 
 
 dataC <- data %>%
-filter(organization == "Peer Health Exchange (PHE BOS)")  %>%
-filter(program_year %in% c("11","10","9")) %>%
-mutate(total_served = sum(actual_served,na.rm=TRUE)) %>%
-mutate(average= total_served/3)
+filter(organization == "Peer Health Exchange (PHE BOS)")  
+
+# Calculating Growth
+  
+growthC <- dataC %>%
+  arrange(reporting_year) %>%
+  mutate(diff_year = program_year - lag(program_year)) %>%
+  mutate(diff_growth = actual_served - lag(actual_served)) %>%
+  mutate(rate_percent = (diff_growth /diff_year)/ lag(actual_served) * 100)
+
+# Calculating the average growth rate for the last five years
+
+growthC <- growthC %>%
+  filter(diff_growth != "NA") %>%
+  filter(program_year %in% c("11","10","9","8","7")) %>%
+  mutate(avg_growth_rate = mean(rate_percent)) %>%
+  mutate(avg_diff_growth= mean(diff_growth))
+
+# Average diff growth is -127.8
+
+( 3161-127.8 )
+
+(3033.2 - 127.8)
+
+(2905.4 - 127.8)
+
+(2777.6 - 127.8)
+
+(2649.8 -127.8)
+
+# Year 2019-2020 : 3033.2
+# Year 2020-2021 : 2905.4
+# Year 2021-2022 : 2777.6
+# Year 2022-2023 : 2649.8
+# Year 2023-2024 :  2522
+
 
 
 ```
 
 ```{r, Portfolio Orgs, Youth Villages,241}
 
- # Youth Villages 
-  # Progam Years 10,9,8 are the last three years of data. This is what is being used to find average growth of beneficiaries served.
+ # Filtering for Youth Villages 
 
-  
 dataD <- data %>%
-filter(organization == "Youth Villages (YV BOS)") %>%
-filter(program_year %in% c("10","9","8")) %>%
-mutate(total_served = sum(actual_served,na.rm=TRUE)) %>%
-mutate(average= total_served/3)
+filter(organization == "Youth Villages (YV BOS)") 
+
+# Mutating to get factors that are necessary to calculate growth
+
+growthD <- dataD %>%
+  arrange(reporting_year) %>%
+  mutate(diff_year = program_year - lag(program_year)) %>%
+  mutate(diff_growth = actual_served - lag(actual_served)) %>%
+  mutate(rate_percent = (diff_growth /diff_year)/ lag(actual_served) * 100)
+
+# Calculating the average growth rate for the last five years
+
+growthD <- growthD %>%
+  filter(diff_growth != "NA") %>%
+  filter(program_year %in% c("10","9","8","7","6")) %>%
+  mutate(avg_growth_rate = mean(rate_percent)) %>%
+  mutate(avg_diff_growth= mean(diff_growth))
+
+# Average difference in growth from year to year is 28.8 (this only accounts for the last 5 years)
+
+(328 + 28.8)
+
+(356.8 +28.8)
+
+(385.6 + 28.8)
+
+(414.4 + 28.8)
+
+(443.2 + 28.8)
+
+
+# Year 2019-2020 : 356.8
+# Year 2020-2021 : 385.6
+# Year 2021-2022 : 414.4
+# Year 2022-2023 : 443.2
+# Year 2023-2024 : 472
+
 
 ```
 
 ```{r, Portfolio Organizations, Family Independence Iniative,3348}
 
- # Family Independence Iniative
-  # Progam Years 8,7,6 are the last three years of data. This is what is being used to find average growth of beneficiaries served.
+ # Filtering for Family Independence Iniative
 
-  
 dataE <- data %>%
-filter(organization == "Family Independence Initiative (FII BOS)") %>%
-filter(program_year %in% c("8","7","6")) %>%
-mutate(total_served = sum(actual_served,na.rm=TRUE)) %>%
-mutate(average= total_served/3)
+filter(organization == "Family Independence Initiative (FII BOS)") 
+
+# Mutating to get factors that are necessary to calculate growth
+
+growthE <- dataE %>%
+  arrange(reporting_year) %>%
+  mutate(diff_year = program_year - lag(program_year)) %>%
+  mutate(diff_growth = actual_served - lag(actual_served)) %>%
+  mutate(rate_percent = (diff_growth /diff_year)/ lag(actual_served) * 100)
+
+# Calculating the average growth rate for the last five years
+
+growthE <- growthE %>%
+  filter(diff_growth != "NA") %>%
+  filter(program_year %in% c("8","7","6","5","4")) %>%
+  mutate(avg_growth_rate = mean(rate_percent)) %>%
+  mutate(avg_diff_growth= mean(diff_growth))
+
+# Average diff growth is 276.2
+
+(2957 + 276.2)
+
+(3233.2 + 276.2)
+
+(3509.4 + 276.2)
+
+(3785.6 + 276.2)
+
+(4061.8 +276.2 )
+
+# Year 2019-2020 :  3233.2
+# Year 2020-2021 : 3509.4
+# Year 2021-2022 : 3785.6
+# Year 2022-2023 : 4061.8
+# Year 2023-2024 :4338
 ```
 
 ```{r,Portfolio Organization, Single Stop,9604}
 
-# Single Stop
-  # Progam Years 8,7,6 are the last three years of data. This is what is being used to find average growth of beneficiaries served.
-
+# Filtering for Single Stop
   
 dataF <- data %>%
-filter(organization == "Single Stop USA (SSUSA BOS)") %>% 
-filter(program_year %in% c("8","7","6")) %>%
-mutate(total_served = sum(actual_served,na.rm=TRUE)) %>%
-mutate(average= total_served/3)
+filter(organization == "Single Stop USA (SSUSA BOS)")
+
+# Mutating to get factors that are necessary to calculate growth
+
+growthF <- dataF %>%
+  arrange(reporting_year) %>%
+  mutate(diff_year = program_year - lag(program_year)) %>%
+  mutate(diff_growth = actual_served - lag(actual_served)) %>%
+  mutate(rate_percent = (diff_growth /diff_year)/ lag(actual_served) * 100)
+
+# Calculating the average growth rate for the last five years
+
+growthF <- growthF %>%
+  filter(diff_growth != "NA") %>%
+  filter(program_year %in% c("8","7","6","5","4")) %>%
+  mutate(avg_growth_rate = mean(rate_percent)) %>%
+  mutate(avg_diff_growth= mean(diff_growth))
+
+# Average diff growth is 1058.8
+
+(7494 + 1058.8)
+
+(8552.8 + 1058.8)
+
+(9611.6 + 1058.8 )
+
+(10670.4 +1058.8)
+
+(11729.2 + 1058.8)
+
+# Year 2019-2020 : 8552.8
+# Year 2020-2021 : 9611.6
+# Year 2021-2022 :  10670.4
+# Year 2022-2023 : 11729.2
+# Year 2023-2024 :  12788
+
+
 ```
 
 ```{r, Portfolio Organization, College Advising Corps,16922}
 
 # College Advising Corps
-  # Progam Years 6,5,4 are the last three years of data. This is what is being used to find average growth of beneficiaries served.
   
 dataG <- data %>%
-filter(organization == "College Advising Corps (CAC BOS)") %>%
-filter(program_year %in% c("6","5","4")) %>%
-mutate(total_served = sum(actual_served,na.rm=TRUE)) %>%
-mutate(average= total_served/3)
+filter(organization == "College Advising Corps (CAC BOS)") 
+
+# Mutating to get factors that are necessary to calculate growth
+
+growthG <- dataG%>%
+  arrange(reporting_year) %>%
+  mutate(diff_year = program_year - lag(program_year)) %>%
+  mutate(diff_growth = actual_served - lag(actual_served)) %>%
+  mutate(rate_percent = (diff_growth /diff_year)/ lag(actual_served) * 100)
+
+# Calculating the average growth rate for the last five years
+
+growthG <- growthG %>%
+  filter(diff_growth != "NA") %>%
+  filter(program_year %in% c("6","5","4","3","2")) %>%
+  mutate(avg_growth_rate = mean(rate_percent)) %>%
+  mutate(avg_diff_growth= mean(diff_growth))
+
+# Average diff growth is 2605.8
+
+(16779 + 2605.8)
+
+(19384.8 +2605.8 )
+
+(21990.6 + 2605.8)
+
+(24596.4 + 2605.8)
+
+(27202.2 +2605.8)
+
+# Year 2019-2020 : 19384.8
+# Year 2020-2021 : 21990.6
+# Year 2021-2022 :  24596.4
+# Year 2022-2023 : 27202.2
+# Year 2023-2024 : 29808
+
 ```
 
 ```{r, Portfolio Organizations,Care Message,50138}
 
 # Care Message
-  # Progam Years 3,2,1 are the last three years of data. This is what is being used to find average growth of beneficiaries served.
-  
+
+
 dataH <- data %>%
-filter(organization == "CareMessage (CM BOS)") %>%
-filter(program_year %in% c("3","2","1")) %>%
-mutate(total_served = sum(actual_served,na.rm=TRUE)) %>%
-mutate(average= total_served/3)
+filter(organization == "CareMessage (CM BOS)") 
+
+# Assumes that the max beneficiaries served will be 300,000
+
+
+# Coordinates 
+# (0,130151) (5,300000)
+
+(300000 - 130151)/5
+
+# Average Growth is 33969.8 per year 
+
+(130151 + 33969.8)
+
+(164120.8 +33969.8)
+
+(198090.6 + 33969.8)
+
+(232060.4 + 33969.8)
+
+(266030.2 + 33969.8 )
+
+
+# Year 2019-2020 : 164120.8
+# Year 2020-2021 : 198090.6
+# Year 2021-2022 :  232060.4
+# Year 2022-2023 : 266030.2
+# Year 2023-2024 : 300,000
+
+
 ```
+
 
 ```{r, Portfolio Organizations,BAM,169}
 
 # BAM/Youth Guidance
-  # Progam Years 2 and 1 are the last two years of data. This is what is being used to find average growth of beneficiaries served.
-  
+
 dataI <- data %>%
-filter(organization == "Youth Guidance (BAM BOS)") %>%
-filter(program_year %in% c("3","2","1")) %>%
-mutate(total_served = sum(actual_served,na.rm=TRUE)) %>%
-mutate(average= total_served/3)
+filter(organization == "Youth Guidance (BAM BOS)") 
+
+# Mutating to get factors that are necessary to calculate growth
+
+growthI <- dataI %>%
+  arrange(reporting_year) %>%
+  mutate(diff_year = program_year - lag(program_year)) %>%
+  mutate(diff_growth = actual_served - lag(actual_served)) %>%
+  mutate(rate_percent = (diff_growth /diff_year)/ lag(actual_served) * 100)
+
+# Calculating the average growth rate for the last five years
+
+growthI <- growthI %>%
+  filter(diff_growth != "NA") %>%
+  filter(program_year %in% c("2","1")) %>%
+  mutate(avg_growth_rate = mean(rate_percent)) %>%
+  mutate(avg_diff_growth= mean(diff_growth))
+
+# Average diff growth is 162
+
+(335 +162)
+
+(497 +162)
+
+(659 +162)
+
+(821 +162)
+
+(983 + 162)
+
+# Year 2019-2020 : 497
+# Year 2020-2021 : 659
+# Year 2021-2022 :  821
+# Year 2022-2023 : 983
+# Year 2023-2024 : 1145
+
+
 ```
 
+```{r, PerScholas}
+
+# Assuming Per Scholas serves 100 people per year because theres no past data
+# Conservative assumptions
+
+# Year 2019-2020 : 93
+# Year 2020-2021 : 100
+# Year 2021-2022 : 100
+# Year 2022-2023 : 100
+# Year 2023-2024 : 100
+
+
+```
+
+```{r,Calculating existing ogs projections}
+
+# Calculating Exisiting Orgs Projections
+
+
+# Year 2019-2020 : 207310.8
+
+93 + 497 + 164120.8 + 19384.8 +8552.8 +3233.2 + 356.8 +3033.2+7900+139.2
+
+
+# Year 2020-2021 :  244692.6
+
+100 + 659 + 198090.6 + 21990.6 +9611.6+3509.4+385.6+2905.4+7300+ 140.4
+
+# Year 2021-2022 : 282067.4
+
+100 + 821 +232060.4+24596.4+ 10670.4+3785.6+414.4+2777.6+6700+141.6
+
+# Year 2022-2023 : 319442.2
+
+
+100 + 983+266030.2+ 27202.2+11729.2+4061.8+443.2+2649.8+6100+142.8
+
+# Year 2023-2024 :356817
+
+100 +1145 + 300000+29808+ 12788 +4338+472+2522+5500+144
+
+```
+
+
+```{r, Calculating Projections}
+
+# Calculating projections with the addition of future orgs 
+
+projections <- data %>%
+  
+  # Filterin out Care Message,not indicative of the average
+  
+  filter(organization != "CareMessage (CM BOS)") %>%
+  
+  # Selecting only for actual served beneficiaries 
+
+  mutate(total_served = sum(actual_served,na.rm=TRUE)) %>%
+  
+  # Finding the total number of people served and making a new column
+  
+  mutate(combined_years = sum(program_year,na.rm=TRUE)) %>%
+
+  # Finding the average years
+  # Combined years is 84 amongst all the orgs (excluding Per Scholas)
+
+  mutate(avg = total_served/81)
+
+# Average beneficiaries served for an org is 4118.667
+
+
+
+```
+
+```{r, Calculations}
+
+# Calculating Exisiting Orgs Projections with Future orgs
+
+
+# Year 2019-2020 : 207310.8
+
+
+# Year 2020-2021 :  248811.3  -- adding 1 org
+
+244692.6 + 4118.667
+
+# Year 2021-2022 : 290304.7 
+
+282067.4 + (4118.67 *2)
+
+# Year 2022-2023 : 331798.2
+
+319442.2 + (4118.67*3)
+
+# Year 2023-2024 :373291.7
+
+356817 + (4118.67 *4)
+```
+
+```{r}
+
+# Creating a Data Frame
+
+new_data <- data.frame("Starting_Year" = c("2019", "2020", "2021", "2022", "2023"), "Beneficiaries_Served" = c(207310.8,248811.3,290304.7,331798.2,373291.7))
+
+# Rounding the numbers of beneficiaries served to the nearest whole number 
+  
+  new_data <- 
+    new_data %>%
+    mutate(Beneficiaries_Served = signif(Beneficiaries_Served,digits=6))
+
+
+# Making a graph with the new dataframe to see future projections
+  
+new_data %>%
+  ggplot(aes(x= Starting_Year, y=Beneficiaries_Served,fill=Beneficiaries_Served)) + geom_col() +
+   scale_fill_gradient(
+low = "lightgreen",
+high = "green4") +
+  labs(title ="Projections for Number of Beneficiaries Served  ",
+        subtitle="GreenLight Boston's Potential Future Portfolio from 2019 - 2024",
+       caption = "Caption: Analyzing the potential future growth in the number of beneficiaries \n served GreenLight Fund Boston's active and legacy organizations. The assumptions \n behind the calculations were that GLF would \n invest in 4 organizations over the next 5 years. \n Calculations to these projections can be found at \n https://github.com/fyohannes/GLF_projections/blob/master/projections.Rmd",
+    x="Year",y= "Number of Beneficiaries",
+    fill = "Number of Beneficiaries Served") +
+  theme(plot.title = element_text(face = "bold")) +
+  scale_y_continuous(name="Number of Beneficiaries Served", labels = scales::comma) +
+  geom_text(aes(label = Beneficiaries_Served), vjust = 1.65)  +
+  theme(legend.title = element_text(color = "gray1", size = 10),legend.key.width = unit(0.8,"cm"),legend.key.size = unit(1, "cm"))  + theme(
+    plot.caption = element_text(hjust = 0, face = "italic"))
+```
 
